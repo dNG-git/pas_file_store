@@ -5,4 +5,4 @@ nbproject
 /_extras
 /build
 /make*.py*
-/pas_file_cache.*
+/pas_file_store.*
