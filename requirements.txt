@@ -1,0 +1,1 @@
+-e git+http://git.direct-netware.de/pas/database/#egg=pas_database

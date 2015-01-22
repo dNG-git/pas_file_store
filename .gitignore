@@ -1,0 +1,8 @@
+__py*
+.*
+*.pyc
+nbproject
+/_extras
+/build
+/make*.py*
+/pas_file_cache.*
