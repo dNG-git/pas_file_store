@@ -7,7 +7,7 @@ The Python Application Services of the direct Netware Group contain
 different modules. Each represents one aspect, feature or provides the base
 functionality for other modules.
 
-"pas_file_store" provides a database managed file stores.
+"pas_file_store" provides database managed file stores.
 
 ----------------------------------------------------------------------------
 Licensing
