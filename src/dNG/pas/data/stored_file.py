@@ -124,20 +124,6 @@ umask to set before creating a new directory or file
 		if (isinstance(db_instance, _DbStoredFile)): self._load_data()
 	#
 
-	def __exit__(self, exc_type, exc_value, traceback):
-	#
-		"""
-python.org: Exit the runtime context related to this object.
-
-:return: (bool) True to suppress exceptions
-:since:  v0.1.00
-		"""
-
-		if (self.local.db_instance is not None): self.local.db_instance.time_last_accessed = int(time())
-
-		return Instance.__exit__(self, exc_type, exc_value, traceback)
-	#
-
 	def _cleanup(self):
 	#
 		"""
@@ -452,6 +438,7 @@ Loads the StoredFile instance and populates variables.
 		with self:
 		#
 			self.db_id = self.local.db_instance.id
+			self.local.db_instance.time_last_accessed = time()
 
 			self._load_settings()
 
