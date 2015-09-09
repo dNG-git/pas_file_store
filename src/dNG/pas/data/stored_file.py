@@ -124,7 +124,7 @@ umask to set before creating a new directory or file
 		if (isinstance(db_instance, _DbStoredFile)): self._load_data()
 	#
 
-	def _cleanup(self):
+	def db_cleanup(self):
 	#
 		"""
 Cleans up the file store directory.
@@ -269,7 +269,7 @@ Checks and creates the file store directory.
 		"""
 
 		if (self.store_path is None): raise IOException("Invalid file instance state for file store access")
-		if ((not Settings.get("pas_database_auto_maintenance", False)) and randrange(0, 30) < 1): self._cleanup()
+		if ((not Settings.get("pas_database_auto_maintenance", False)) and randrange(0, 30) < 1): self.db_cleanup()
 
 		if (path.exists(self.store_path)):
 		#
