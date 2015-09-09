@@ -463,7 +463,7 @@ Loads settings based on the store ID of the StoredFile instance.
 		self.store_path = Settings.get("pas_file_store_{0}_path".format(store_id))
 		if (self.store_path is None): raise ValueException("File store directory has not been configured for ID '{0}'".format(store_id))
 
-		self.subdirectory_length = int(Settings.get("pas_file_store_{0}_subdirectory_length", self.__class__.STORE_SUBDIRECTORY_LENGTH))
+		self.subdirectory_length = int(Settings.get("pas_file_store_{0}_subdirectory_length".format(store_id), self.__class__.STORE_SUBDIRECTORY_LENGTH))
 		if (self.subdirectory_length > 32): raise ValueException("File store subdirectory length is invalid ID '{0}'".format(store_id))
 	#
 
