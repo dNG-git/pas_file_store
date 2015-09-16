@@ -191,10 +191,10 @@ Cleans up the file store directory.
 	def close(self):
 	#
 		"""
-Closes an active stored file handle.
+python.org: Flush and close this stream.
 
 :return: (bool) True on success
-:since: v0.1.00
+:since:  v0.1.00
 		"""
 
 		if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.close()- (#echo(__LINE__)#)", self, context = "pas_tasks_store")
@@ -467,15 +467,15 @@ Loads settings based on the store ID of the StoredFile instance.
 		if (self.subdirectory_length > 32): raise ValueException("File store subdirectory length is invalid ID '{0}'".format(store_id))
 	#
 
-	def read(self, _bytes = 0):
+	def read(self, n = 0):
 	#
 		"""
-Reads from the current stored file instance.
+python.org: Read up to n bytes from the object and return them.
 
-:param _bytes: How many bytes to read from the current position (0 means
-               until EOF)
+:param n: How many bytes to read from the current position (0 means until
+          EOF)
 
-:return: (mixed) Data; False on error
+:return: (bytes) Data; None if EOF
 :since:  v0.1.00
 		"""
 
@@ -484,7 +484,7 @@ Reads from the current stored file instance.
 			self._ensure_stored_file_instance()
 			self.set_data_attributes(time_last_accessed = time())
 
-			return self.stored_file.read(_bytes)
+			return self.stored_file.read(n)
 		#
 	#
 
@@ -521,11 +521,11 @@ Saves changes of the database task instance.
 	def seek(self, offset):
 	#
 		"""
-Seek to a given offset.
+python.org: Change the stream position to the given byte offset.
 
 :param offset: Seek to the given offset
 
-:return: (bool) True on success
+:return: (int) Return the new absolute position.
 :since:  v0.1.00
 		"""
 
@@ -578,9 +578,9 @@ Sets the stored file resource.
 	def tell(self):
 	#
 		"""
-Returns the current offset.
+python.org: Return the current stream position as an opaque number.
 
-:return: (int) Offset; False on error
+:return: (int) Stream position
 :since:  v0.1.00
 		"""
 
@@ -588,19 +588,20 @@ Returns the current offset.
 		return self.stored_file.tell()
 	#
 
-	def write(self, data):
+	def write(self, b):
 	#
 		"""
-Write content to the stored file instance.
+python.org: Write the given bytes or bytearray object, b, to the underlying
+raw stream and return the number of bytes written.
 
-:param data: (Over)write file with the data content at the current position
+:param b: (Over)write file with the given data at the current position
 
-:return: (bool) True on success
+:return: (int) Number of bytes written
 :since:  v0.1.00
 		"""
 
 		self._ensure_stored_file_instance()
-		return self.stored_file.write(data)
+		return self.stored_file.write(b)
 	#
 
 	@staticmethod
