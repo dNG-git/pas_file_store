@@ -54,6 +54,10 @@ class StoredFile(Instance):
              Mozilla Public License, v. 2.0
 	"""
 
+	_DB_INSTANCE_CLASS = _DbStoredFile
+	"""
+SQLAlchemy database instance class to initialize for new instances.
+	"""
 	STORE_ID = "default"
 	"""
 Default store ID for instances of this class
@@ -124,6 +128,50 @@ umask to set before creating a new directory or file
 		if (isinstance(db_instance, _DbStoredFile)): self._load_data()
 	#
 
+	def close(self):
+	#
+		"""
+python.org: Flush and close this stream.
+
+:since: v0.1.00
+		"""
+
+		if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.close()- (#echo(__LINE__)#)", self, context = "pas_tasks_store")
+
+		if (self.stored_file is not None):
+		#
+			try:
+			#
+				self.save()
+				self.stored_file.close()
+			#
+			finally: self.stored_file = None
+		#
+	#
+
+	def _create_writable_directory(self, path):
+	#
+		"""
+Creates the file store directory given.
+
+:param path: File store directory to be created
+
+:since: v0.1.00
+		"""
+
+		if (self.umask is not None): os.umask(int(self.umask, 8))
+		is_writable = False
+
+		try:
+		#
+			os.mkdir(path, self.chmod_dirs)
+			is_writable = os.access(path, os.W_OK)
+		#
+		except IOError: pass
+
+		if (not is_writable): raise IOException("Failed to create file store directory '{0}'".format(path))
+	#
+
 	def db_cleanup(self):
 	#
 		"""
@@ -188,50 +236,6 @@ Cleans up the file store directory.
 		#
 	#
 
-	def close(self):
-	#
-		"""
-python.org: Flush and close this stream.
-
-:return: (bool) True on success
-:since:  v0.1.00
-		"""
-
-		if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.close()- (#echo(__LINE__)#)", self, context = "pas_tasks_store")
-		_return = True
-
-		if (self.stored_file is not None):
-		#
-			_return = self.stored_file.close()
-			self.stored_file = None
-		#
-
-		return _return
-	#
-
-	def _create_writable_directory(self, path):
-	#
-		"""
-Creates the file store directory given.
-
-:param path: File store directory to be created
-
-:since: v0.1.00
-		"""
-
-		if (self.umask is not None): os.umask(int(self.umask, 8))
-		is_writable = False
-
-		try:
-		#
-			os.mkdir(path, self.chmod_dirs)
-			is_writable = os.access(path, os.W_OK)
-		#
-		except IOError: pass
-
-		if (not is_writable): raise IOException("Failed to create file store directory '{0}'".format(path))
-	#
-
 	def delete(self):
 	#
 		"""
@@ -245,8 +249,7 @@ Deletes this entry from the database.
 
 		with self:
 		#
-			file_data = self.get_data_attributes("file_location")
-			stored_file_path_name = path.join(self.store_path, file_data['file_location'])
+			stored_file_path_name = path.join(self.store_path, self.local.db_instance.file_location)
 
 			_return = Instance.delete(self)
 
@@ -298,12 +301,18 @@ Checks or creates a new instance for the stored file.
 				if (resource is None): raise IOException("Can't create stored file instance without a resource URL")
 
 				url_elements = urlsplit(resource)
-				( _, file_name ) = path.split(url_elements.path)
 
-				file_name = re.sub("\\W+", "_", "{0}_{1}".format(self.db_id,
-				                                                file_name
-				                                               )
-				                  )
+				if (url_elements.path in ( "", "/", "/{0}".format(self.db_id) )): file_name = self.db_id
+				else:
+				#
+					( _, file_name ) = path.split(url_elements.path)
+
+					file_name = "{0}_{1}".format(self.db_id,
+					                             file_name
+					                            )
+				#
+
+				file_name = re.sub("\\W+", "_", file_name)
 
 				file_location = file_name
 
@@ -336,6 +345,18 @@ Checks or creates a new instance for the stored file.
 		#
 	#
 
+	def flush(self):
+	#
+		"""
+python.org: Flush the write buffers of the stream if applicable.
+
+:since: v0.1.00
+		"""
+
+		self._ensure_stored_file_instance()
+		self.stored_file.flush()
+	#
+
 	def get_path_name(self):
 	#
 		"""
@@ -349,21 +370,36 @@ Returns the path and name of the stored file.
 		return path.abspath(path.join(self.store_path, self.stored_file_path_name))
 	#
 
+	get_id = Instance._wrap_getter("id")
+	"""
+Returns the stored file ID.
+
+:return: (str) Stored file ID
+:since:  v0.1.00
+	"""
+
 	get_resource = Instance._wrap_getter("resource")
 	"""
 Returns the stored file resource.
 
-:return: (object) Stored file resource
+:return: (str) Stored file resource
 :since:  v0.1.00
 	"""
 
-	get_size = Instance._wrap_getter("size")
-	"""
+	def get_size(self):
+	#
+		"""
 Returns the stored file resource size.
 
 :return: (int) Stored file resource size
 :since:  v0.1.00
-	"""
+		"""
+
+		return (self.get_data_attributes("size")['size']
+		        if (self.stored_file is None) else
+		        self.stored_file.get_size()
+		       )
+	#
 
 	def get_store_id(self):
 	#
@@ -505,14 +541,9 @@ Saves changes of the database task instance.
 			if (self.local.db_instance.time_stored is None): self.local.db_instance.time_stored = time()
 			if (self.local.db_instance.time_last_accessed is None): self.local.db_instance.time_last_accessed = time()
 
-			if (self.local.db_instance.size is None):
-			#
-				stored_file_path_name = path.join(self.store_path,
-				                                  self.local.db_instance.file_location
-				                                 )
-
-				self.local.db_instance.size = path.getsize(stored_file_path_name)
-			#
+			if (self.local.db_instance.size is None
+			    and self.store_path is not None
+			   ): self.local.db_instance.size = path.getsize(self.get_path_name())
 
 			Instance.save(self)
 		#
@@ -540,8 +571,6 @@ Sets values given as keyword arguments to this method.
 
 :since: v0.1.00
 		"""
-
-		self._ensure_thread_local_instance(_DbStoredFile)
 
 		with self:
 		#
@@ -600,37 +629,51 @@ raw stream and return the number of bytes written.
 :since:  v0.1.00
 		"""
 
-		self._ensure_stored_file_instance()
+		with self:
+		#
+			self._ensure_stored_file_instance()
+			self.local.db_instance.size = None
+		#
+
 		return self.stored_file.write(b)
 	#
 
 	@staticmethod
-	def _load(db_instance):
+	def _load(cls, db_instance):
 	#
 		"""
 Load File entry from database.
 
+:param cls: Expected encapsulating database instance class
 :param db_instance: SQLAlchemy database instance
 
 :return: (object) File instance on success
 :since:  v0.1.00
 		"""
 
-		with Connection.get_instance():
+		_return = None
+
+		if (db_instance is not None):
 		#
-			_return = (None if (db_instance is None) else StoredFile(db_instance))
-			if (_return is not None and (not _return.is_valid())): _return = None
+			with Connection.get_instance():
+			#
+				Instance._ensure_db_class(cls, db_instance)
+
+				_return = StoredFile(db_instance)
+				if (not _return.is_valid()): _return = None
+			#
 		#
 
 		return _return
 	#
 
-	@staticmethod
-	def load_id(_id):
+	@classmethod
+	def load_id(cls, _id):
 	#
 		"""
 Load File by ID.
 
+:param cls: Expected encapsulating database instance class
 :param _id: File ID
 
 :return: (object) File instance on success
@@ -639,17 +682,19 @@ Load File by ID.
 
 		if (_id is None): raise NothingMatchedException("File ID is invalid")
 
-		with Connection.get_instance() as connection: _return = StoredFile._load(connection.query(_DbStoredFile).get(_id))
+		with Connection.get_instance(): _return = StoredFile._load(cls, Instance.get_db_class_query(cls).get(_id))
+
 		if (_return is None): raise NothingMatchedException("File ID '{0}' not found".format(_id))
 		return _return
 	#
 
-	@staticmethod
-	def load_resource(resource):
+	@classmethod
+	def load_resource(cls, resource):
 	#
 		"""
 Load File by the resource.
 
+:param cls: Expected encapsulating database instance class
 :param resource: File resource
 
 :return: (object) File instance on success
@@ -658,7 +703,12 @@ Load File by the resource.
 
 		if (resource is None): raise NothingMatchedException("File resource is invalid")
 
-		with Connection.get_instance() as connection: _return = StoredFile._load(connection.query(_DbStoredFile).filter(_DbStoredFile.resource == resource).first())
+		with Connection.get_instance():
+		#
+			db_instance = Instance.get_db_class_query(cls).filter(_DbStoredFile.resource == resource).first()
+			_return = StoredFile._load(cls, db_instance)
+		#
+
 		if (_return is None): raise NothingMatchedException("File resource '{0}' not found".format(resource))
 		return _return
 	#
