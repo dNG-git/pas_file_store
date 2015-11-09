@@ -51,7 +51,7 @@ with TemporaryDirectory(dir = ".") as build_directory:
 	      long_description = """"pas_file_store" provides database managed file stores.""",
 	      author = "direct Netware Group",
 	      author_email = "web@direct-netware.de",
-	      license = "GPLv2+",
+	      license = "MPL2",
 	      url = "https://www.direct-netware.de/redirect?pas;file_store",
 
 	      package_dir = { "": _build_path },
