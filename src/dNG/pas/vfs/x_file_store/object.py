@@ -71,6 +71,18 @@ Underlying StoredFile instance
 		"""
 	#
 
+	def close(self):
+	#
+		"""
+python.org: Flush and close this stream.
+
+:since: v0.1.03
+		"""
+
+		FileLikeWrapperMixin.close(self)
+		self.stored_file = None
+	#
+
 	def get_name(self):
 	#
 		"""
