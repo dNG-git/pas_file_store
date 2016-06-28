@@ -29,6 +29,7 @@ import re
 try: from urllib.parse import urlsplit
 except ImportError: from urlparse import urlsplit
 
+from dNG.data.file import File
 from dNG.pas.data.binary import Binary
 from dNG.pas.data.settings import Settings
 from dNG.pas.database.connection import Connection
@@ -38,7 +39,6 @@ from dNG.pas.database.transaction_context import TransactionContext
 from dNG.pas.database.instances.stored_file import StoredFile as _DbStoredFile
 from dNG.pas.runtime.io_exception import IOException
 from dNG.pas.runtime.value_exception import ValueException
-import dNG.data.file
 
 class StoredFile(Instance):
 #
@@ -329,7 +329,7 @@ Checks or creates a new instance for the stored file.
 
 				file_path_name = path.join(self.store_path, path.normpath(file_location))
 
-				self.stored_file = dNG.data.file.File()
+				self.stored_file = File()
 				if (not self.stored_file.open(file_path_name, file_mode = "w+b")): raise IOException("Failed to create stored file instance")
 
 				self.stored_file_path_name = file_path_name
@@ -340,7 +340,7 @@ Checks or creates a new instance for the stored file.
 		#
 			file_path_name = path.join(self.store_path, self.stored_file_path_name)
 
-			self.stored_file = dNG.data.file.File()
+			self.stored_file = File()
 			if (not self.stored_file.open(file_path_name, file_mode = "r+b")): raise IOException("Failed to open stored file instance")
 		#
 	#
