@@ -20,6 +20,12 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 
 # pylint: disable=unused-argument
 
+from os import path
+
+try: from urllib.parse import urlsplit
+except ImportError: from urlparse import urlsplit
+
+from dNG.pas.data.mime_type import MimeType
 from dNG.pas.data.stored_file import StoredFile
 from dNG.pas.database.nothing_matched_exception import NothingMatchedException
 from dNG.pas.runtime.io_exception import IOException
@@ -65,22 +71,50 @@ Constructor __init__(Object)
 
 		FileLikeWrapperMixin.__init__(self)
 
-		self.stored_file = None
-		"""
-Underlying StoredFile instance
-		"""
+		self.supported_features['flush'] = self._supports_flush
+		self.supported_features['implementing_instance'] = self._supports_implementing_instance
 	#
 
-	def close(self):
+	def get_implementing_instance(self):
 	#
 		"""
-python.org: Flush and close this stream.
+Returns the implementing instance.
 
-:since: v0.1.03
+:return: (mixed) Implementing instance
+:since:  v0.2.00
 		"""
 
-		FileLikeWrapperMixin.close(self)
-		self.stored_file = None
+		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
+		return self._wrapped_resource
+	#
+
+	def get_implementing_scheme(self):
+	#
+		"""
+Returns the implementing scheme name.
+
+:return: (str) Implementing scheme name
+:since:  v0.2.00
+		"""
+
+		return "x-file-store"
+	#
+
+	def get_mimetype(self):
+	#
+		"""
+Returns the mime type of this VFS object.
+
+:return: (str) VFS object mime type
+:since:  v0.2.00
+		"""
+
+		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
+
+		resource_data = path.splitext(urlsplit(self._wrapped_resource.get_resource()).path)
+		mimetype_definition = MimeType.get_instance().get(resource_data[1][1:])
+
+		return ("application/octet-stream" if (mimetype_definition is None) else mimetype_definition['type'])
 	#
 
 	def get_name(self):
@@ -89,74 +123,112 @@ python.org: Flush and close this stream.
 Returns the name of this VFS object.
 
 :return: (str) VFS object name
-:since:  v0.1.03
+:since:  v0.1.00
 		"""
 
-		if (self.stored_file is None): raise IOException("VFS object not opened")
-		return self.stored_file.get_id()
+		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
+		return self._wrapped_resource.get_id()
 	#
 
-	def get_uri(self):
+	def get_time_created(self):
 	#
 		"""
-Returns the URI of this VFS object.
+Returns the UNIX timestamp this object was created.
 
-:return: (str) VFS URI
-:since:  v0.1.03
+:return: (int) UNIX timestamp this object was created
+:since:  v0.2.00
 		"""
 
-		if (self.stored_file is None): raise IOException("VFS object not opened")
-		return "x-file-store:///{0}".format(self.stored_file.get_id())
+		return self.get_time_updated()
 	#
 
-	def new(self, _type, vfs_uri):
+	def get_time_updated(self):
+	#
+		"""
+Returns the UNIX timestamp this object was updated.
+
+:return: (int) UNIX timestamp this object was updated
+:since:  v0.2.00
+		"""
+
+		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
+		return self._wrapped_resource.get_data_attributes("time_stored")['time_stored']
+	#
+
+	def get_type(self):
+	#
+		"""
+Returns the type of this object.
+
+:return: (int) Object type
+:since:  v0.2.00
+		"""
+
+		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
+		return Object.TYPE_FILE
+	#
+
+	def get_url(self):
+	#
+		"""
+Returns the URL of this VFS object.
+
+:return: (str) VFS URL
+:since:  v0.1.00
+		"""
+
+		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
+		return "x-file-store:///{0}".format(self._wrapped_resource.get_id())
+	#
+
+	def new(self, _type, vfs_url):
 	#
 		"""
 Creates a new VFS object.
 
 :param _type: VFS object type
-:param vfs_uri: VFS URI
+:param vfs_url: VFS URL
 
 :since: v0.1.00
 		"""
 
 		if (_type != Object.TYPE_FILE): raise OperationNotSupportedException()
-		if (self.stored_file is not None): raise IOException("Can't create new VFS object on already opened instance")
+		if (self._wrapped_resource is not None): raise IOException("Can't create new VFS object on already opened instance")
 
 		stored_file_data = { }
-		vfs_file_id = Abstract._get_id_from_vfs_uri(vfs_uri)
+		vfs_file_id = Abstract._get_id_from_vfs_url(vfs_url)
 
-		self.stored_file = StoredFile()
+		stored_file = StoredFile()
 
-		stored_file_data['resource'] = "x-file-store:///{0}".format(self.stored_file.get_id()
+		stored_file_data['resource'] = "x-file-store:///{0}".format(stored_file.get_id()
 		                                                           if (len(vfs_file_id) < 1) else
 		                                                           vfs_file_id
 		                                                          )
 
-		if (len(stored_file_data) > 0): self.stored_file.set_data_attributes(**stored_file_data)
+		if (len(stored_file_data) > 0): stored_file.set_data_attributes(**stored_file_data)
 
-		self._set_wrapped_resource(self.stored_file)
+		self._set_wrapped_resource(stored_file)
 	#
 
-	def open(self, vfs_uri, readonly = False):
+	def open(self, vfs_url, readonly = False):
 	#
 		"""
 Opens a VFS object.
 
-:param vfs_uri: VFS URI
+:param vfs_url: VFS URL
 :param readonly: Open object in readonly mode
 
 :since: v0.1.00
 		"""
 
-		if (self.stored_file is not None): raise IOException("Can't create new VFS object on already opened instance")
+		if (self._wrapped_resource is not None): raise IOException("Can't create new VFS object on already opened instance")
 
-		vfs_file_id = Abstract._get_id_from_vfs_uri(vfs_uri)
+		vfs_file_id = Abstract._get_id_from_vfs_url(vfs_url)
 
-		try: self.stored_file = StoredFile.load_id(vfs_file_id)
-		except NothingMatchedException as handled_exception: raise IOException("VFS URI '{0}' is invalid".format(vfs_uri), handled_exception)
+		try: stored_file = StoredFile.load_id(vfs_file_id)
+		except NothingMatchedException as handled_exception: raise IOException("VFS URL '{0}' is invalid".format(vfs_url), handled_exception)
 
-		self._set_wrapped_resource(self.stored_file)
+		self._set_wrapped_resource(stored_file)
 	#
 
 	def scan(self):
@@ -169,6 +241,30 @@ Scan over objects of a collection like a directory.
 		"""
 
 		raise OperationNotSupportedException()
+	#
+
+	def _supports_flush(self):
+	#
+		"""
+Returns false if flushing buffers is not supported.
+
+:return: (bool) True if flushing buffers is supported
+:since:  v0.1.04
+		"""
+
+		return (self._wrapped_resource is not None)
+	#
+
+	def _supports_implementing_instance(self):
+	#
+		"""
+Returns false if no underlying, implementing instance can be returned.
+
+:return: (bool) True if an implementing instance can be returned.
+:since:  v0.2.00
+		"""
+
+		return (self._wrapped_resource is not None)
 	#
 #
 
