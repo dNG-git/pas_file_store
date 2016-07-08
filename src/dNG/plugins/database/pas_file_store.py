@@ -20,27 +20,41 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 
 # pylint: disable=unused-argument
 
-from dNG.pas.module.named_loader import NamedLoader
-from dNG.pas.plugins.hook import Hook
+from dNG.database.schema import Schema
+from dNG.module.named_loader import NamedLoader
+from dNG.plugins.hook import Hook
 
-def execute_auto_maintenance(params, last_return = None):
+def after_apply_schema(params, last_return = None):
 #
 	"""
-Executes database auto-maintenance tasks.
+Called for "dNG.pas.Database.applySchema.after"
 
 :param params: Parameter specified
 :param last_return: The return value from the last hook called.
 
 :return: (mixed) Return value
-:since:  v0.1.00
+:since:  v0.2.00
 	"""
 
-	stored_file = NamedLoader.get_instance("dNG.pas.data.StoredFile")
-	stored_file.db_cleanup()
+	stored_file_class = NamedLoader.get_class("dNG.database.instances.StoredFile")
+	Schema.apply_version(stored_file_class)
 
-	_file = NamedLoader.get_instance("dNG.pas.data.cache.File")
-	_file.db_cleanup()
+	return last_return
+#
 
+def load_all(params, last_return = None):
+#
+	"""
+Load and register all SQLAlchemy objects to generate database tables.
+
+:param params: Parameter specified
+:param last_return: The return value from the last hook called.
+
+:return: (mixed) Return value
+:since:  v0.2.00
+	"""
+
+	NamedLoader.get_class("dNG.database.instances.StoredFile")
 	return last_return
 #
 
@@ -49,10 +63,11 @@ def register_plugin():
 	"""
 Register plugin hooks.
 
-:since: v0.1.00
+:since: v0.2.00
 	"""
 
-	Hook.register("dNG.pas.Database.execute_auto_maintenance", execute_auto_maintenance)
+	Hook.register("dNG.pas.Database.applySchema.after", after_apply_schema)
+	Hook.register("dNG.pas.Database.loadAll", load_all)
 #
 
 def unregister_plugin():
@@ -60,10 +75,11 @@ def unregister_plugin():
 	"""
 Unregister plugin hooks.
 
-:since: v0.1.00
+:since: v0.2.00
 	"""
 
-	Hook.unregister("dNG.pas.Database.execute_auto_maintenance", execute_auto_maintenance)
+	Hook.unregister("dNG.pas.Database.applySchema.after", after_apply_schema)
+	Hook.unregister("dNG.pas.Database.loadAll", load_all)
 #
 
 ##j## EOF

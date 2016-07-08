@@ -22,7 +22,8 @@ from sqlalchemy.schema import Column
 from sqlalchemy.types import BIGINT, TEXT, VARCHAR
 from uuid import uuid4 as uuid
 
-from dNG.pas.database.types.date_time import DateTime
+from dNG.database.types.date_time import DateTime
+
 from .abstract import Abstract
 
 class StoredFile(Abstract):
@@ -30,11 +31,11 @@ class StoredFile(Abstract):
 	"""
 SQLAlchemy database instance for StoredFile.
 
-:author:     direct Netware Group
+:author:     direct Netware Group et al.
 :copyright:  (C) direct Netware Group - All rights reserved
 :package:    pas
 :subpackage: file_store
-:since:      v0.1.00
+:since:      v0.2.00
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
 	"""
@@ -45,7 +46,7 @@ SQLAlchemy database instance for StoredFile.
 	"""
 SQLAlchemy table name
 	"""
-	db_instance_class = "dNG.pas.data.StoredFile"
+	db_instance_class = "dNG.data.StoredFile"
 	"""
 Encapsulating SQLAlchemy database instance class name
 	"""
@@ -92,7 +93,7 @@ stored_file.file_location
 		"""
 Constructor __init__(StoredFile)
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		Abstract.__init__(self, *args, **kwargs)

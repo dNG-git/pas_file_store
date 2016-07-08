@@ -29,27 +29,27 @@ import re
 try: from urllib.parse import urlsplit
 except ImportError: from urlparse import urlsplit
 
+from dNG.data.binary import Binary
 from dNG.data.file import File
-from dNG.pas.data.binary import Binary
-from dNG.pas.data.settings import Settings
-from dNG.pas.database.connection import Connection
-from dNG.pas.database.instance import Instance
-from dNG.pas.database.nothing_matched_exception import NothingMatchedException
-from dNG.pas.database.transaction_context import TransactionContext
-from dNG.pas.database.instances.stored_file import StoredFile as _DbStoredFile
-from dNG.pas.runtime.io_exception import IOException
-from dNG.pas.runtime.value_exception import ValueException
+from dNG.data.settings import Settings
+from dNG.database.connection import Connection
+from dNG.database.instance import Instance
+from dNG.database.instances.stored_file import StoredFile as _DbStoredFile
+from dNG.database.nothing_matched_exception import NothingMatchedException
+from dNG.database.transaction_context import TransactionContext
+from dNG.runtime.io_exception import IOException
+from dNG.runtime.value_exception import ValueException
 
 class StoredFile(Instance):
 #
 	"""
 "StoredFile" represents a (mostly generated) file in a local storage.
 
-:author:     direct Netware Group
+:author:     direct Netware Group et al.
 :copyright:  direct Netware Group - All rights reserved
 :package:    pas
 :subpackage: file_store
-:since:      v0.1.00
+:since:      v0.2.00
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
 	"""
@@ -78,7 +78,7 @@ Constructor __init__(File)
 
 :param db_instance: Encapsulated SQLAlchemy database instance
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		Instance.__init__(self, db_instance)
@@ -133,7 +133,7 @@ umask to set before creating a new directory or file
 		"""
 python.org: Flush and close this stream.
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.close()- (#echo(__LINE__)#)", self, context = "pas_tasks_store")
@@ -156,7 +156,7 @@ Creates the file store directory given.
 
 :param path: File store directory to be created
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		if (self.umask is not None): os.umask(int(self.umask, 8))
@@ -177,7 +177,7 @@ Creates the file store directory given.
 		"""
 Cleans up the file store directory.
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		with Connection.get_instance() as connection:
@@ -242,7 +242,7 @@ Cleans up the file store directory.
 Deletes this entry from the database.
 
 :return: (bool) True on success
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		if (self.store_path is None): raise IOException("Invalid file instance state for deletion")
@@ -268,7 +268,7 @@ Deletes this entry from the database.
 		"""
 Checks and creates the file store directory.
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		if (self.store_path is None): raise IOException("Invalid file instance state for file store access")
@@ -288,7 +288,7 @@ Checks and creates the file store directory.
 		"""
 Checks or creates a new instance for the stored file.
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		self._ensure_store_exists()
@@ -350,7 +350,7 @@ Checks or creates a new instance for the stored file.
 		"""
 python.org: Flush the write buffers of the stream if applicable.
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		self._ensure_stored_file_instance()
@@ -363,7 +363,7 @@ python.org: Flush the write buffers of the stream if applicable.
 Returns the path and name of the stored file.
 
 :return: (str) Path and name of the stored file
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		self._ensure_stored_file_instance()
@@ -375,7 +375,7 @@ Returns the path and name of the stored file.
 Returns the stored file ID.
 
 :return: (str) Stored file ID
-:since:  v0.1.00
+:since:  v0.2.00
 	"""
 
 	get_resource = Instance._wrap_getter("resource")
@@ -383,7 +383,7 @@ Returns the stored file ID.
 Returns the stored file resource.
 
 :return: (str) Stored file resource
-:since:  v0.1.00
+:since:  v0.2.00
 	"""
 
 	def get_size(self):
@@ -392,7 +392,7 @@ Returns the stored file resource.
 Returns the stored file resource size.
 
 :return: (int) Stored file resource size
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		return (self.get_data_attributes("size")['size']
@@ -407,7 +407,7 @@ Returns the stored file resource size.
 Returns the file store ID.
 
 :return: (str) File store ID
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		_return = self.get_data_attributes("store_id")['store_id']
@@ -422,7 +422,7 @@ Returns the file store ID.
 Checks if the pointer is at EOF.
 
 :return: (bool) True if EOF
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		self._ensure_stored_file_instance()
@@ -438,7 +438,7 @@ one.
 :param timestamp: External timestamp to compare with
 
 :return: (bool) True if up-to-date
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		with self: return (self.local.db_instance.time_stored >= timestamp)
@@ -450,7 +450,7 @@ one.
 Returns true if the stored file instance is valid.
 
 :return: (bool) True if valid
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		with self:
@@ -466,7 +466,7 @@ Returns true if the stored file instance is valid.
 		"""
 Loads the StoredFile instance and populates variables.
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}._load_data()- (#echo(__LINE__)#)", self, context = "pas_tasks_store")
@@ -489,7 +489,7 @@ Loads the StoredFile instance and populates variables.
 		"""
 Loads settings based on the store ID of the StoredFile instance.
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		store_id = self.get_store_id()
@@ -512,7 +512,7 @@ python.org: Read up to n bytes from the object and return them.
           EOF)
 
 :return: (bytes) Data; None if EOF
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		with self:
@@ -529,7 +529,7 @@ python.org: Read up to n bytes from the object and return them.
 		"""
 Saves changes of the database task instance.
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		with self:
@@ -557,7 +557,7 @@ python.org: Change the stream position to the given byte offset.
 :param offset: Seek to the given offset
 
 :return: (int) Return the new absolute position.
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		self._ensure_stored_file_instance()
@@ -569,7 +569,7 @@ python.org: Change the stream position to the given byte offset.
 		"""
 Sets values given as keyword arguments to this method.
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		with self:
@@ -601,7 +601,7 @@ Sets the stored file resource.
 
 :param value: Stored file resource
 
-:since: v0.1.00
+:since: v0.2.00
 	"""
 
 	def tell(self):
@@ -610,7 +610,7 @@ Sets the stored file resource.
 python.org: Return the current stream position as an opaque number.
 
 :return: (int) Stream position
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		self._ensure_stored_file_instance()
@@ -626,7 +626,7 @@ raw stream and return the number of bytes written.
 :param b: (Over)write file with the given data at the current position
 
 :return: (int) Number of bytes written
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		with self:
@@ -648,7 +648,7 @@ Load File entry from database.
 :param db_instance: SQLAlchemy database instance
 
 :return: (object) File instance on success
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		_return = None
@@ -677,7 +677,7 @@ Load File by ID.
 :param _id: File ID
 
 :return: (object) File instance on success
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		if (_id is None): raise NothingMatchedException("File ID is invalid")
@@ -698,7 +698,7 @@ Load File by the resource.
 :param resource: File resource
 
 :return: (object) File instance on success
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		if (resource is None): raise NothingMatchedException("File resource is invalid")

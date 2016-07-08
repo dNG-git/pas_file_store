@@ -18,18 +18,18 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 #echo(__FILEPATH__)#
 """
 
-from dNG.pas.data.stored_file import StoredFile
+from dNG.data.stored_file import StoredFile
 
 class File(StoredFile):
 #
 	"""
 "File" represents a cached (mostly generated) file in the store.
 
-:author:     direct Netware Group
+:author:     direct Netware Group et al.
 :copyright:  direct Netware Group - All rights reserved
 :package:    pas
 :subpackage: file_store
-:since:      v0.1.00
+:since:      v0.2.00
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
 	"""

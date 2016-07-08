@@ -25,24 +25,24 @@ from os import path
 try: from urllib.parse import urlsplit
 except ImportError: from urlparse import urlsplit
 
-from dNG.pas.data.mime_type import MimeType
-from dNG.pas.data.stored_file import StoredFile
-from dNG.pas.database.nothing_matched_exception import NothingMatchedException
-from dNG.pas.runtime.io_exception import IOException
-from dNG.pas.runtime.operation_not_supported_exception import OperationNotSupportedException
-from dNG.pas.vfs.abstract import Abstract
-from dNG.pas.vfs.file_like_wrapper_mixin import FileLikeWrapperMixin
+from dNG.data.mime_type import MimeType
+from dNG.data.stored_file import StoredFile
+from dNG.database.nothing_matched_exception import NothingMatchedException
+from dNG.runtime.io_exception import IOException
+from dNG.runtime.operation_not_supported_exception import OperationNotSupportedException
+from dNG.vfs.abstract import Abstract
+from dNG.vfs.file_like_wrapper_mixin import FileLikeWrapperMixin
 
 class Object(FileLikeWrapperMixin, Abstract):
 #
 	"""
 Provides the VFS implementation for 'x-file-store' objects.
 
-:author:     direct Netware Group
+:author:     direct Netware Group et al.
 :copyright:  direct Netware Group - All rights reserved
 :package:    pas
 :subpackage: file_store
-:since:      v0.1.00
+:since:      v0.2.00
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
 	"""
@@ -66,13 +66,14 @@ File IO methods implemented by an wrapped resource.
 		"""
 Constructor __init__(Object)
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		FileLikeWrapperMixin.__init__(self)
 
 		self.supported_features['flush'] = self._supports_flush
 		self.supported_features['implementing_instance'] = self._supports_implementing_instance
+		self.supported_features['time_created'] = True
 	#
 
 	def get_implementing_instance(self):
@@ -123,7 +124,7 @@ Returns the mime type of this VFS object.
 Returns the name of this VFS object.
 
 :return: (str) VFS object name
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
@@ -139,7 +140,8 @@ Returns the UNIX timestamp this object was created.
 :since:  v0.2.00
 		"""
 
-		return self.get_time_updated()
+		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
+		return self._wrapped_resource.get_data_attributes("time_stored")['time_stored']
 	#
 
 	def get_time_updated(self):
@@ -151,8 +153,7 @@ Returns the UNIX timestamp this object was updated.
 :since:  v0.2.00
 		"""
 
-		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
-		return self._wrapped_resource.get_data_attributes("time_stored")['time_stored']
+		return self.get_time_created()
 	#
 
 	def get_type(self):
@@ -174,7 +175,7 @@ Returns the type of this object.
 Returns the URL of this VFS object.
 
 :return: (str) VFS URL
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
@@ -189,7 +190,7 @@ Creates a new VFS object.
 :param _type: VFS object type
 :param vfs_url: VFS URL
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		if (_type != Object.TYPE_FILE): raise OperationNotSupportedException()
@@ -218,7 +219,7 @@ Opens a VFS object.
 :param vfs_url: VFS URL
 :param readonly: Open object in readonly mode
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		if (self._wrapped_resource is not None): raise IOException("Can't create new VFS object on already opened instance")
@@ -237,7 +238,7 @@ Opens a VFS object.
 Scan over objects of a collection like a directory.
 
 :return: (object) Child VFS object
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		raise OperationNotSupportedException()
@@ -249,7 +250,7 @@ Scan over objects of a collection like a directory.
 Returns false if flushing buffers is not supported.
 
 :return: (bool) True if flushing buffers is supported
-:since:  v0.1.04
+:since:  v0.2.00
 		"""
 
 		return (self._wrapped_resource is not None)
