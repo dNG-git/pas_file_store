@@ -179,7 +179,7 @@ Returns the URL of this VFS object.
 		"""
 
 		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
-		return "x-file-store:///{0}".format(self._wrapped_resource.get_id())
+		self._wrapped_resource.get_vfs_url()
 	#
 
 	def new(self, _type, vfs_url):

@@ -74,7 +74,7 @@ Default number of characters used to create the subdirectory structure.
 	def __init__(self, db_instance = None):
 	#
 		"""
-Constructor __init__(File)
+Constructor __init__(StoredFile)
 
 :param db_instance: Encapsulated SQLAlchemy database instance
 
@@ -126,6 +126,17 @@ umask to set before creating a new directory or file
 		self.umask = Settings.get("pas_file_store_umask")
 
 		if (isinstance(db_instance, _DbStoredFile)): self._load_data()
+	#
+
+	def __del__(self):
+	#
+		"""
+Destructor __del__(StoredFile)
+
+:since: v0.1.00
+		"""
+
+		self.close()
 	#
 
 	def close(self):
@@ -414,6 +425,18 @@ Returns the file store ID.
 		if (_return == ""): _return = self.__class__.STORE_ID
 
 		return _return
+	#
+
+	def get_vfs_url(self):
+	#
+		"""
+Returns the VFS URL of this instance.
+
+:return: (str) Stored file VFS URL; None if undefined
+:since:  v0.2.00
+		"""
+
+		return "x-file-store:///{0}".format(self.get_id())
 	#
 
 	def is_eof(self):
