@@ -69,6 +69,7 @@ Constructor __init__(Object)
 :since: v0.2.00
 		"""
 
+		Abstract.__init__(self)
 		FileLikeWrapperMixin.__init__(self)
 
 		self.supported_features['flush'] = self._supports_flush
@@ -179,7 +180,7 @@ Returns the URL of this VFS object.
 		"""
 
 		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
-		self._wrapped_resource.get_vfs_url()
+		return self._wrapped_resource.get_vfs_url()
 	#
 
 	def new(self, _type, vfs_url):
@@ -230,18 +231,6 @@ Opens a VFS object.
 		except NothingMatchedException as handled_exception: raise IOException("VFS URL '{0}' is invalid".format(vfs_url), handled_exception)
 
 		self._set_wrapped_resource(stored_file)
-	#
-
-	def scan(self):
-	#
-		"""
-Scan over objects of a collection like a directory.
-
-:return: (object) Child VFS object
-:since:  v0.2.00
-		"""
-
-		raise OperationNotSupportedException()
 	#
 
 	def _supports_flush(self):
