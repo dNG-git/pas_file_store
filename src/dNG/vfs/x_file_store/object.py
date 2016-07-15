@@ -72,9 +72,23 @@ Constructor __init__(Object)
 		Abstract.__init__(self)
 		FileLikeWrapperMixin.__init__(self)
 
+		self.supported_features['filesystem_path_name'] = True
 		self.supported_features['flush'] = self._supports_flush
 		self.supported_features['implementing_instance'] = self._supports_implementing_instance
 		self.supported_features['time_created'] = True
+	#
+
+	def get_filesystem_path_name(self):
+	#
+		"""
+Returns the path and name for the VFS object in the system filesystem.
+
+:return: (str) System filesystem path and name of the VFS object
+:since:  v0.2.00
+		"""
+
+		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
+		return self._wrapped_resource.get_path_name()
 	#
 
 	def get_implementing_instance(self):
