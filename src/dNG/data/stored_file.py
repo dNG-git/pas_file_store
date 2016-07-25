@@ -566,7 +566,7 @@ Saves changes of the database task instance.
 
 			if (self.local.db_instance.size is None
 			    and self.store_path is not None
-			   ): self.local.db_instance.size = os.stat(self.get_path_name()).st_mtime
+			   ): self.local.db_instance.size = os.stat(self.get_path_name()).st_size
 
 			Instance.save(self)
 		#
