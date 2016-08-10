@@ -126,6 +126,7 @@ umask to set before creating a new directory or file
 		self.umask = Settings.get("pas_file_store_umask")
 
 		if (isinstance(db_instance, _DbStoredFile)): self._load_data()
+		else: self._load_settings()
 	#
 
 	def __del__(self):
@@ -309,16 +310,17 @@ Checks or creates a new instance for the stored file.
 			with self:
 			#
 				resource = self.get_resource()
-				if (resource is None): raise IOException("Can't create stored file instance without a resource URL")
+				if (resource is None): resource = self.get_vfs_url()
 
+				resource_id = self.get_id()
 				url_elements = urlsplit(resource)
 
-				if (url_elements.path in ( "", "/", "/{0}".format(self.db_id) )): file_name = self.db_id
+				if (url_elements.path in ( "", "/", "/{0}".format(resource_id) )): file_name = resource_id
 				else:
 				#
 					( _, file_name ) = path.split(url_elements.path)
 
-					file_name = "{0}_{1}".format(self.db_id,
+					file_name = "{0}_{1}".format(resource_id,
 					                             file_name
 					                            )
 				#
@@ -422,7 +424,7 @@ Returns the file store ID.
 		"""
 
 		_return = self.get_data_attributes("store_id")['store_id']
-		if (_return == ""): _return = self.__class__.STORE_ID
+		if (_return is None or _return == ""): _return = self.__class__.STORE_ID
 
 		return _return
 	#
