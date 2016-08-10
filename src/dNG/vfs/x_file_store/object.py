@@ -75,6 +75,7 @@ Constructor __init__(Object)
 		self.supported_features['filesystem_path_name'] = True
 		self.supported_features['flush'] = self._supports_flush
 		self.supported_features['implementing_instance'] = self._supports_implementing_instance
+		self.supported_features['seek'] = self._supports_seek
 		self.supported_features['time_created'] = True
 	#
 
@@ -229,7 +230,7 @@ Creates a new VFS object.
 	def open(self, vfs_url, readonly = False):
 	#
 		"""
-Opens a VFS object.
+Opens a VFS object. The handle is set at the beginning of the object.
 
 :param vfs_url: VFS URL
 :param readonly: Open object in readonly mode
@@ -265,6 +266,18 @@ Returns false if flushing buffers is not supported.
 Returns false if no underlying, implementing instance can be returned.
 
 :return: (bool) True if an implementing instance can be returned.
+:since:  v0.2.00
+		"""
+
+		return (self._wrapped_resource is not None)
+	#
+
+	def _supports_seek(self):
+	#
+		"""
+Returns false if seek is not supported.
+
+:return: (bool) True if seek is supported
 :since:  v0.2.00
 		"""
 
