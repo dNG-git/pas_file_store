@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-##j## BOF
 
 """
 direct PAS
@@ -27,8 +26,7 @@ from dNG.database.types.date_time import DateTime
 from .abstract import Abstract
 
 class StoredFile(Abstract):
-#
-	"""
+    """
 SQLAlchemy database instance for StoredFile.
 
 :author:     direct Netware Group et al.
@@ -38,67 +36,64 @@ SQLAlchemy database instance for StoredFile.
 :since:      v0.2.00
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
-	"""
+    """
 
-	# pylint: disable=invalid-name
+    # pylint: disable=invalid-name
 
-	__tablename__ = "{0}_stored_file".format(Abstract.get_table_prefix())
-	"""
+    __tablename__ = "{0}_stored_file".format(Abstract.get_table_prefix())
+    """
 SQLAlchemy table name
-	"""
-	db_instance_class = "dNG.data.StoredFile"
-	"""
+    """
+    db_instance_class = "dNG.data.StoredFile"
+    """
 Encapsulating SQLAlchemy database instance class name
-	"""
-	db_schema_version = 1
-	"""
+    """
+    db_schema_version = 1
+    """
 Database schema version
-	"""
+    """
 
-	id = Column(VARCHAR(32), primary_key = True)
-	"""
+    id = Column(VARCHAR(32), primary_key = True)
+    """
 stored_file.id
-	"""
-	time_stored = Column(DateTime, index = True, nullable = False)
-	"""
+    """
+    time_stored = Column(DateTime, index = True, nullable = False)
+    """
 stored_file.time_stored
-	"""
-	time_last_accessed = Column(DateTime, index = True, nullable = False)
-	"""
+    """
+    time_last_accessed = Column(DateTime, index = True, nullable = False)
+    """
 stored_file.time_last_accessed
-	"""
-	timeout = Column(DateTime, index = True)
-	"""
+    """
+    timeout = Column(DateTime, index = True)
+    """
 stored_file.timeout
-	"""
-	store_id = Column(VARCHAR(100), index = True, nullable = False)
-	"""
+    """
+    store_id = Column(VARCHAR(100), index = True, nullable = False)
+    """
 stored_file.store_id
-	"""
-	resource = Column(TEXT, index = True, nullable = False)
-	"""
+    """
+    resource = Column(TEXT, index = True, nullable = False)
+    """
 stored_file.resource
-	"""
-	size = Column(BIGINT, index = True)
-	"""
+    """
+    size = Column(BIGINT, index = True)
+    """
 stored_file.size
-	"""
-	file_location = Column(VARCHAR(255), nullable = False)
-	"""
+    """
+    file_location = Column(VARCHAR(255), nullable = False)
+    """
 stored_file.file_location
-	"""
+    """
 
-	def __init__(self, *args, **kwargs):
-	#
-		"""
+    def __init__(self, *args, **kwargs):
+        """
 Constructor __init__(StoredFile)
 
 :since: v0.2.00
-		"""
+        """
 
-		Abstract.__init__(self, *args, **kwargs)
-		if (self.id is None): self.id = uuid().hex
-	#
+        Abstract.__init__(self, *args, **kwargs)
+        if (self.id is None): self.id = uuid().hex
+    #
 #
-
-##j## EOF

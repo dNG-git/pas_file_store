@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-##j## BOF
 
 """
 direct PAS
@@ -34,8 +33,7 @@ from dNG.vfs.abstract import Abstract
 from dNG.vfs.file_like_wrapper_mixin import FileLikeWrapperMixin
 
 class Object(FileLikeWrapperMixin, Abstract):
-#
-	"""
+    """
 Provides the VFS implementation for 'x-file-store' objects.
 
 :author:     direct Netware Group et al.
@@ -45,244 +43,227 @@ Provides the VFS implementation for 'x-file-store' objects.
 :since:      v0.2.00
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
-	"""
+    """
 
-	_FILE_WRAPPED_METHODS = ( "flush",
-	                          "get_size",
-	                          "is_eof",
-	                          "is_valid",
-	                          "read",
-	                          "seek",
-	                          "tell",
-	                          "truncate",
-	                          "write"
-	                        )
-	"""
+    _FILE_WRAPPED_METHODS = ( "flush",
+                              "get_size",
+                              "is_eof",
+                              "is_valid",
+                              "read",
+                              "seek",
+                              "tell",
+                              "truncate",
+                              "write"
+                            )
+    """
 File IO methods implemented by an wrapped resource.
-	"""
+    """
 
-	def __init__(self):
-	#
-		"""
+    def __init__(self):
+        """
 Constructor __init__(Object)
 
 :since: v0.2.00
-		"""
+        """
 
-		Abstract.__init__(self)
-		FileLikeWrapperMixin.__init__(self)
+        Abstract.__init__(self)
+        FileLikeWrapperMixin.__init__(self)
 
-		self.supported_features['filesystem_path_name'] = True
-		self.supported_features['flush'] = self._supports_flush
-		self.supported_features['implementing_instance'] = self._supports_implementing_instance
-		self.supported_features['seek'] = self._supports_seek
-		self.supported_features['time_created'] = True
-	#
+        self.supported_features['filesystem_path_name'] = True
+        self.supported_features['flush'] = self._supports_flush
+        self.supported_features['implementing_instance'] = self._supports_implementing_instance
+        self.supported_features['seek'] = self._supports_seek
+        self.supported_features['time_created'] = True
+    #
 
-	def get_filesystem_path_name(self):
-	#
-		"""
+    def get_filesystem_path_name(self):
+        """
 Returns the path and name for the VFS object in the system filesystem.
 
 :return: (str) System filesystem path and name of the VFS object
 :since:  v0.2.00
-		"""
+        """
 
-		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
-		return self._wrapped_resource.get_path_name()
-	#
+        if (self._wrapped_resource is None): raise IOException("VFS object not opened")
+        return self._wrapped_resource.get_path_name()
+    #
 
-	def get_implementing_instance(self):
-	#
-		"""
+    def get_implementing_instance(self):
+        """
 Returns the implementing instance.
 
 :return: (mixed) Implementing instance
 :since:  v0.2.00
-		"""
+        """
 
-		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
-		return self._wrapped_resource
-	#
+        if (self._wrapped_resource is None): raise IOException("VFS object not opened")
+        return self._wrapped_resource
+    #
 
-	def get_implementing_scheme(self):
-	#
-		"""
+    def get_implementing_scheme(self):
+        """
 Returns the implementing scheme name.
 
 :return: (str) Implementing scheme name
 :since:  v0.2.00
-		"""
+        """
 
-		return "x-file-store"
-	#
+        return "x-file-store"
+    #
 
-	def get_mimetype(self):
-	#
-		"""
+    def get_mimetype(self):
+        """
 Returns the mime type of this VFS object.
 
 :return: (str) VFS object mime type
 :since:  v0.2.00
-		"""
+        """
 
-		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
+        if (self._wrapped_resource is None): raise IOException("VFS object not opened")
 
-		resource_data = path.splitext(urlsplit(self._wrapped_resource.get_resource()).path)
-		mimetype_definition = MimeType.get_instance().get(resource_data[1][1:])
+        resource_data = path.splitext(urlsplit(self._wrapped_resource.get_resource()).path)
+        mimetype_definition = MimeType.get_instance().get(resource_data[1][1:])
 
-		return ("application/octet-stream" if (mimetype_definition is None) else mimetype_definition['type'])
-	#
+        return ("application/octet-stream" if (mimetype_definition is None) else mimetype_definition['type'])
+    #
 
-	def get_name(self):
-	#
-		"""
+    def get_name(self):
+        """
 Returns the name of this VFS object.
 
 :return: (str) VFS object name
 :since:  v0.2.00
-		"""
+        """
 
-		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
-		return self._wrapped_resource.get_id()
-	#
+        if (self._wrapped_resource is None): raise IOException("VFS object not opened")
+        return self._wrapped_resource.get_id()
+    #
 
-	def get_time_created(self):
-	#
-		"""
+    def get_time_created(self):
+        """
 Returns the UNIX timestamp this object was created.
 
 :return: (int) UNIX timestamp this object was created
 :since:  v0.2.00
-		"""
+        """
 
-		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
-		return self._wrapped_resource.get_data_attributes("time_stored")['time_stored']
-	#
+        if (self._wrapped_resource is None): raise IOException("VFS object not opened")
+        return self._wrapped_resource.get_data_attributes("time_stored")['time_stored']
+    #
 
-	def get_time_updated(self):
-	#
-		"""
+    def get_time_updated(self):
+        """
 Returns the UNIX timestamp this object was updated.
 
 :return: (int) UNIX timestamp this object was updated
 :since:  v0.2.00
-		"""
+        """
 
-		return self.get_time_created()
-	#
+        return self.get_time_created()
+    #
 
-	def get_type(self):
-	#
-		"""
+    def get_type(self):
+        """
 Returns the type of this object.
 
 :return: (int) Object type
 :since:  v0.2.00
-		"""
+        """
 
-		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
-		return Object.TYPE_FILE
-	#
+        if (self._wrapped_resource is None): raise IOException("VFS object not opened")
+        return Object.TYPE_FILE
+    #
 
-	def get_url(self):
-	#
-		"""
+    def get_url(self):
+        """
 Returns the URL of this VFS object.
 
 :return: (str) VFS URL
 :since:  v0.2.00
-		"""
+        """
 
-		if (self._wrapped_resource is None): raise IOException("VFS object not opened")
-		return self._wrapped_resource.get_vfs_url()
-	#
+        if (self._wrapped_resource is None): raise IOException("VFS object not opened")
+        return self._wrapped_resource.get_vfs_url()
+    #
 
-	def new(self, _type, vfs_url):
-	#
-		"""
+    def new(self, _type, vfs_url):
+        """
 Creates a new VFS object.
 
 :param _type: VFS object type
 :param vfs_url: VFS URL
 
 :since: v0.2.00
-		"""
+        """
 
-		if (_type != Object.TYPE_FILE): raise OperationNotSupportedException()
-		if (self._wrapped_resource is not None): raise IOException("Can't create new VFS object on already opened instance")
+        if (_type != Object.TYPE_FILE): raise OperationNotSupportedException()
+        if (self._wrapped_resource is not None): raise IOException("Can't create new VFS object on already opened instance")
 
-		stored_file_data = { }
-		vfs_file_id = Abstract._get_id_from_vfs_url(vfs_url)
+        stored_file_data = { }
+        vfs_file_id = Abstract._get_id_from_vfs_url(vfs_url)
 
-		stored_file = StoredFile()
+        stored_file = StoredFile()
 
-		stored_file_data['resource'] = "x-file-store:///{0}".format(stored_file.get_id()
-		                                                           if (len(vfs_file_id) < 1) else
-		                                                           vfs_file_id
-		                                                          )
+        stored_file_data['resource'] = "x-file-store:///{0}".format(stored_file.get_id()
+                                                                   if (len(vfs_file_id) < 1) else
+                                                                   vfs_file_id
+                                                                  )
 
-		if (len(stored_file_data) > 0): stored_file.set_data_attributes(**stored_file_data)
+        if (len(stored_file_data) > 0): stored_file.set_data_attributes(**stored_file_data)
 
-		self._set_wrapped_resource(stored_file)
-	#
+        self._set_wrapped_resource(stored_file)
+    #
 
-	def open(self, vfs_url, readonly = False):
-	#
-		"""
+    def open(self, vfs_url, readonly = False):
+        """
 Opens a VFS object. The handle is set at the beginning of the object.
 
 :param vfs_url: VFS URL
 :param readonly: Open object in readonly mode
 
 :since: v0.2.00
-		"""
+        """
 
-		if (self._wrapped_resource is not None): raise IOException("Can't create new VFS object on already opened instance")
+        if (self._wrapped_resource is not None): raise IOException("Can't create new VFS object on already opened instance")
 
-		vfs_file_id = Abstract._get_id_from_vfs_url(vfs_url)
+        vfs_file_id = Abstract._get_id_from_vfs_url(vfs_url)
 
-		try: stored_file = StoredFile.load_id(vfs_file_id)
-		except NothingMatchedException as handled_exception: raise IOException("VFS URL '{0}' is invalid".format(vfs_url), handled_exception)
+        try: stored_file = StoredFile.load_id(vfs_file_id)
+        except NothingMatchedException as handled_exception: raise IOException("VFS URL '{0}' is invalid".format(vfs_url), handled_exception)
 
-		self._set_wrapped_resource(stored_file)
-	#
+        self._set_wrapped_resource(stored_file)
+    #
 
-	def _supports_flush(self):
-	#
-		"""
+    def _supports_flush(self):
+        """
 Returns false if flushing buffers is not supported.
 
 :return: (bool) True if flushing buffers is supported
 :since:  v0.2.00
-		"""
+        """
 
-		return (self._wrapped_resource is not None)
-	#
+        return (self._wrapped_resource is not None)
+    #
 
-	def _supports_implementing_instance(self):
-	#
-		"""
+    def _supports_implementing_instance(self):
+        """
 Returns false if no underlying, implementing instance can be returned.
 
 :return: (bool) True if an implementing instance can be returned.
 :since:  v0.2.00
-		"""
+        """
 
-		return (self._wrapped_resource is not None)
-	#
+        return (self._wrapped_resource is not None)
+    #
 
-	def _supports_seek(self):
-	#
-		"""
+    def _supports_seek(self):
+        """
 Returns false if seek is not supported.
 
 :return: (bool) True if seek is supported
 :since:  v0.2.00
-		"""
+        """
 
-		return (self._wrapped_resource is not None)
-	#
+        return (self._wrapped_resource is not None)
+    #
 #
-
-##j## EOF

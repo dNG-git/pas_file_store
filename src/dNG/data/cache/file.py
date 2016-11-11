@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-##j## BOF
 
 """
 direct PAS
@@ -21,8 +20,7 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 from dNG.data.stored_file import StoredFile
 
 class File(StoredFile):
-#
-	"""
+    """
 "File" represents a cached (mostly generated) file in the store.
 
 :author:     direct Netware Group et al.
@@ -32,20 +30,18 @@ class File(StoredFile):
 :since:      v0.2.00
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
-	"""
+    """
 
-	STORE_ID = "cache"
-	"""
+    STORE_ID = "cache"
+    """
 Default store ID for instances of this class
-	"""
-	STORE_SIZE_MB_MAX = 2048
-	"""
+    """
+    STORE_SIZE_MB_MAX = 2048
+    """
 Default maximum size for instances of this class
-	"""
-	STORE_SUBDIRECTORY_LENGTH = 4
-	"""
+    """
+    STORE_SUBDIRECTORY_LENGTH = 4
+    """
 Default number of characters used to create the subdirectory structure.
-	"""
+    """
 #
-
-##j## EOF

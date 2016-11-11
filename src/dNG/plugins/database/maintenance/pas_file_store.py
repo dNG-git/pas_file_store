@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-##j## BOF
 
 """
 direct PAS
@@ -24,8 +23,7 @@ from dNG.module.named_loader import NamedLoader
 from dNG.plugins.hook import Hook
 
 def execute_auto_maintenance(params, last_return = None):
-#
-	"""
+    """
 Executes database auto-maintenance tasks.
 
 :param params: Parameter specified
@@ -33,37 +31,33 @@ Executes database auto-maintenance tasks.
 
 :return: (mixed) Return value
 :since:  v0.2.00
-	"""
+    """
 
-	stored_file = NamedLoader.get_instance("dNG.data.StoredFile")
-	stored_file.db_cleanup()
+    stored_file = NamedLoader.get_instance("dNG.data.StoredFile")
+    stored_file.db_cleanup()
 
-	_file = NamedLoader.get_instance("dNG.data.cache.File")
-	_file.db_cleanup()
+    _file = NamedLoader.get_instance("dNG.data.cache.File")
+    _file.db_cleanup()
 
-	return last_return
+    return last_return
 #
 
 def register_plugin():
-#
-	"""
+    """
 Register plugin hooks.
 
 :since: v0.2.00
-	"""
+    """
 
-	Hook.register("dNG.pas.Database.executeAutoMaintenance", execute_auto_maintenance)
+    Hook.register("dNG.pas.Database.executeAutoMaintenance", execute_auto_maintenance)
 #
 
 def unregister_plugin():
-#
-	"""
+    """
 Unregister plugin hooks.
 
 :since: v0.2.00
-	"""
+    """
 
-	Hook.unregister("dNG.pas.Database.executeAutoMaintenance", execute_auto_maintenance)
+    Hook.unregister("dNG.pas.Database.executeAutoMaintenance", execute_auto_maintenance)
 #
-
-##j## EOF
