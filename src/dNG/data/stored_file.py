@@ -143,11 +143,11 @@ python.org: Flush and close this stream.
 :since: v0.2.00
         """
 
-        if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.close()- (#echo(__LINE__)#)", self, context = "pas_tasks_store")
-
         if (self.stored_file is not None):
+            if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.close()- (#echo(__LINE__)#)", self, context = "pas_file_store")
+
             try:
-                self.save()
+                if (self.stored_file.is_valid()): self.save()
                 self.stored_file.close()
             finally: self.stored_file = None
         #
@@ -179,6 +179,8 @@ Cleans up the file store directory.
 
 :since: v0.2.00
         """
+
+        if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.db_cleanup()- (#echo(__LINE__)#)", self, context = "pas_file_store")
 
         with Connection.get_instance() as connection:
             store_id = self.get_store_id()
@@ -234,6 +236,8 @@ Deletes this entry from the database.
 :return: (bool) True on success
 :since:  v0.2.00
         """
+
+        if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.delete()- (#echo(__LINE__)#)", self, context = "pas_file_store")
 
         if (self.store_path is None): raise IOException("Invalid file instance state for deletion")
 
@@ -331,8 +335,9 @@ python.org: Flush the write buffers of the stream if applicable.
 :since: v0.2.00
         """
 
-        self._ensure_stored_file_instance()
-        self.stored_file.flush()
+        if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.flush()- (#echo(__LINE__)#)", self, context = "pas_file_store")
+
+        if (self.stored_file is not None): self.stored_file.flush()
     #
 
     def get_path_name(self):
@@ -342,6 +347,8 @@ Returns the path and name of the stored file.
 :return: (str) Path and name of the stored file
 :since:  v0.2.00
         """
+
+        if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.get_path_name()- (#echo(__LINE__)#)", self, context = "pas_file_store")
 
         self._ensure_stored_file_instance()
         return path.abspath(path.join(self.store_path, self.stored_file_path_name))
@@ -371,6 +378,8 @@ Returns the stored file resource size.
 :since:  v0.2.00
         """
 
+        if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.get_size()- (#echo(__LINE__)#)", self, context = "pas_file_store")
+
         return (self.get_data_attributes("size")['size']
                 if (self.stored_file is None) else
                 self.stored_file.get_size()
@@ -384,6 +393,8 @@ Returns the file store ID.
 :return: (str) File store ID
 :since:  v0.2.00
         """
+
+        if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.get_store_id()- (#echo(__LINE__)#)", self, context = "pas_file_store")
 
         _return = self.get_data_attributes("store_id")['store_id']
         if (_return is None or _return == ""): _return = self.__class__.STORE_ID
@@ -399,6 +410,8 @@ Returns the VFS URL of this instance.
 :since:  v0.2.00
         """
 
+        if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.get_vfs_url()- (#echo(__LINE__)#)", self, context = "pas_file_store")
+
         return "x-file-store:///{0}".format(self.get_id())
     #
 
@@ -409,6 +422,8 @@ Checks if the pointer is at EOF.
 :return: (bool) True if EOF
 :since:  v0.2.00
         """
+
+        if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.is_eof()- (#echo(__LINE__)#)", self, context = "pas_file_store")
 
         self._ensure_stored_file_instance()
         return self.stored_file.is_eof()
@@ -425,6 +440,8 @@ one.
 :since:  v0.2.00
         """
 
+        if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.is_up_to_date()- (#echo(__LINE__)#)", self, context = "pas_file_store")
+
         with self: return (self.local.db_instance.time_stored >= timestamp)
     #
 
@@ -436,9 +453,14 @@ Returns true if the stored file instance is valid.
 :since:  v0.2.00
         """
 
+        if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.is_valid()- (#echo(__LINE__)#)", self, context = "pas_file_store")
+
         with self:
             return (self.local.db_instance.timeout is None
                     or self.local.db_instance.timeout >= int(time())
+                    and (self.stored_file is None
+                         or self.stored_file.is_valid()
+                        )
                    )
         #
     #
@@ -450,7 +472,7 @@ Loads the StoredFile instance and populates variables.
 :since: v0.2.00
         """
 
-        if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}._load_data()- (#echo(__LINE__)#)", self, context = "pas_tasks_store")
+        if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}._load_data()- (#echo(__LINE__)#)", self, context = "pas_file_store")
 
         with self:
             self.db_id = self.local.db_instance.id
@@ -509,12 +531,13 @@ Saves changes of the database task instance.
         """
 
         with self:
-            if (self.stored_file is not None
-                and hasattr(self.stored_file, "flush")
-               ): self.stored_file.flush()
-
+            if (self.local.db_instance.file_location is None): self._ensure_stored_file_instance()
             if (self.local.db_instance.time_stored is None): self.local.db_instance.time_stored = time()
             if (self.local.db_instance.time_last_accessed is None): self.local.db_instance.time_last_accessed = time()
+
+            if (self.stored_file is not None
+                and hasattr(self.stored_file, "flush")
+                ): self.stored_file.flush()
 
             if (self.local.db_instance.size is None
                 and self.store_path is not None
@@ -545,19 +568,21 @@ Sets values given as keyword arguments to this method.
 :since: v0.2.00
         """
 
-        with self:
+        with self, self.local.connection.no_autoflush:
             if (self.db_id is None): self.db_id = self.local.db_instance.id
-            is_store_id_changed = (self.local.db_instance.store_id is None)
 
             if ("time_stored" in kwargs): self.local.db_instance.time_stored = int(kwargs['time_stored'])
             if ("time_last_accessed" in kwargs): self.local.db_instance.time_last_accessed = int(kwargs['time_last_accessed'])
             if ("timeout" in kwargs): self.local.db_instance.timeout = int(kwargs['timeout'])
             if ("resource" in kwargs): self.local.db_instance.resource = Binary.utf8(kwargs['resource'])
 
+            is_store_id_changed = True
+
             if ("store_id" in kwargs):
                 self.local.db_instance.store_id = Binary.utf8(kwargs['store_id'])
-                is_store_id_changed = True
-            elif (self.local.db_instance.store_id is None): self.local.db_instance.store_id = self.__class__.STORE_ID
+            elif (self.local.db_instance.store_id is None):
+                self.local.db_instance.store_id = self.__class__.STORE_ID
+            else: is_store_id_changed = False
 
             if (is_store_id_changed): self._load_settings()
 
