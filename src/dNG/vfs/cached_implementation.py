@@ -22,13 +22,12 @@ from dNG.data.logging.log_line import LogLine
 from dNG.database.connection import Connection
 from dNG.database.nothing_matched_exception import NothingMatchedException
 from dNG.runtime.io_exception import IOException
+from dNG.runtime.not_implemented_exception import NotImplementedException
 
 try:
-#
-    from dNG.data.tasks.database_proxy import DatabaseProxy as DatabaseTasks
-    from dNG.tasks.database_lrt_hook import DatabaseLrtHook
-#
-except ImportError: DatabaseTasks = None
+    from dNG.data.tasks.persistent import Persistent as PersistentTasks
+    from dNG.tasks.persistent_lrt_hook import PersistentLrtHook
+except ImportError: PersistentTasks = None
 
 from .implementation import Implementation
 
@@ -58,24 +57,27 @@ scheduled as a background task.
 :since: v0.2.00
         """
 
-        if (DatabaseTasks is None
-            or (not DatabaseTasks.is_available())
-           ): LogLine.warning("pas.file_store vfs.CachedImplementation requested to cache VFS URL '{0}' but 'pas.tasks' is not available", vfs_url, context = "pas_file_store")
-        else:
-            database_tasks = DatabaseTasks.get_instance()
+        persistent_tasks = None
 
-            database_task_data = { "vfs_url": vfs_url }
+        try:
+            if (PersistentTasks is not None): persistent_tasks = PersistentTasks.get_instance()
+        except NotImplementedException: pass
+
+        if (persistent_tasks is None):
+            LogLine.warning("pas.file_store vfs.CachedImplementation requested to cache VFS URL '{0}' but 'pas.tasks' is not available", vfs_url, context = "pas_file_store")
+        else:
+            persistent_tasks_data = { "vfs_url": vfs_url }
 
             if (cached_data is not None
-                and len(database_task_data) > 0
-               ): database_task_data['cached_data'] = cached_data
+                and len(persistent_tasks_data) > 0
+               ): persistent_tasks_data['cached_data'] = cached_data
 
-            database_tasks.add("dNG.pas.vfs.CachedObject.storeVfsUrl.{0}".format(vfs_url),
-                               DatabaseLrtHook("dNG.pas.vfs.CachedObject.storeVfsUrl",
-                                               **database_task_data
-                                              ),
-                               1
-                              )
+            persistent_tasks.add("dNG.pas.vfs.CachedObject.storeVfsUrl.{0}".format(vfs_url),
+                                 PersistentLrtHook("dNG.pas.vfs.CachedObject.storeVfsUrl",
+                                                   **persistent_tasks_data
+                                                  ),
+                                 1
+                                )
         #
     #
 
